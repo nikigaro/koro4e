@@ -28,10 +28,12 @@ export function createFeedView({ store, usersService, postsService, newsService 
   function mount(root) {
     const cleanupComposer = composer.mount(root.querySelector('.feed__composer'));
     const cleanupList = postList.mount(root.querySelector('[data-feed-posts]'));
+    const cleanupNews = newsPanel.mount(root);
 
     return () => {
       cleanupComposer();
       cleanupList();
+      cleanupNews();
     };
   }
 

@@ -330,6 +330,61 @@
   margin-bottom: 0;
 }
 
+.news-panel__item-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.news-panel__version {
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.news-panel__link {
+  align-self: flex-start;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.news-panel__image {
+  width: 100%;
+  max-height: 140px;
+  margin-top: var(--space-1);
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.news-editor__image {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+}
+
+.news-editor__preview {
+  display: grid;
+  place-items: center;
+  min-height: 60px;
+  overflow: hidden;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.news-editor__preview img {
+  width: 100%;
+  max-height: 100px;
+  object-fit: cover;
+}
+
 .news-panel__item-actions {
   display: flex;
   gap: var(--space-2);
@@ -538,14 +593,18 @@
   color: var(--color-accent);
 }
 
+.profile__name .profile__creator-link {
+  color: var(--color-creator);
+}
+
 .role-badge {
   display: inline-flex;
   margin-left: var(--space-2);
   padding: 2px 8px;
   vertical-align: middle;
   border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
+  background: var(--color-creator);
+  color: #ffffff;
   font-size: 11px;
   font-weight: 700;
 }
