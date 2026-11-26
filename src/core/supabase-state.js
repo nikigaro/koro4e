@@ -33,7 +33,14 @@ function mergeUsers(local = [], remote = []) {
   remote.forEach((user) => merged.set(user.id, user));
   local.forEach((user) => {
     const saved = merged.get(user.id);
-    merged.set(user.id, { ...saved, ...user, auth: user.auth ?? saved?.auth });
+    const lastSeen = Math.max(user.lastSeen ?? 0, saved?.lastSeen ?? 0);
+    merged.set(user.id, {
+      ...saved,
+      ...user,
+      auth: user.auth ?? saved?.auth,
+      lastSeen: lastSeen || undefined,
+      isOnline: Date.now() - lastSeen < 45_000,
+    });
   });
   return [...merged.values()];
 }

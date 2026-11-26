@@ -3,10 +3,10 @@ import { createSnowToggle } from './snow-toggle.js';
 import { createOnlineCounter } from './online-counter.js';
 
 /** Шапка: логотип, тема, снег, счётчик и выход. Вкладки живут отдельно внизу. */
-export function createAppHeader({ store, usersService, onLogout }) {
+export function createAppHeader({ store, usersService, onLogout, presenceService }) {
   const themeToggle = createThemeToggle();
   const snowToggle = createSnowToggle();
-  const onlineCounter = createOnlineCounter({ store, usersService });
+  const onlineCounter = createOnlineCounter({ store, usersService, presenceService });
 
   const html = `
     <header class="app-header">

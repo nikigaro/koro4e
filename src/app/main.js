@@ -7,6 +7,7 @@ import { createAppHeader } from '../layout/app-header.js';
 import { createTabBar } from '../layout/tab-bar.js';
 import { getNavigationItems } from '../layout/navigation.js';
 import { createUsersService } from '../features/users/users-service.js';
+import { createPresenceService } from '../features/users/presence-service.js';
 import { createPostsService } from '../features/posts/posts-service.js';
 import { createFeedView } from '../features/posts/feed-view.js';
 import { createWallView } from '../features/wall/wall-view.js';
@@ -58,6 +59,7 @@ if (!remoteState || Object.keys(remoteState).length === 0) {
 
 // 2. Сервисы (бизнес-логика)
 const usersService = createUsersService(store);
+const presenceService = createPresenceService({ store, usersService });
 const postsService = createPostsService({ store, usersService });
 const authService = createAuthService({ store, usersService });
 const mediaService = createMediaService({ store, usersService });
@@ -70,13 +72,43 @@ function ensureCurrentDevice() {
   if (user) devicesService.ensureDevice(user.id);
 }
 
-async function checkDeviceAgain() {
+const SYNC_KEYS = ['users', 'posts', 'media', 'audio', 'messages', 'chatAgreements', 'devices'];
+
+async function syncFromRemote() {
   try {
     const remote = await loadRemoteState();
-    if (remote) store.setState(mergeStates(store.getState(), remote));
+    if (!remote) return;
+
+    const current = store.getState();
+    const next = mergeStates(current, remote);
+    const changed = SYNC_KEYS.some((key) => (
+      JSON.stringify(current[key]) !== JSON.stringify(next[key])
+    ));
+    if (!changed) return;
+
+    store.setState(next);
+    if (await chatService.decryptMissing()) {
+      store.setState({ ...store.getState() });
+    }
   } catch (error) {
-    console.warn('Не удалось проверить устройство:', error);
+    console.warn('Не удалось обновить данные из Supabase:', error);
   }
+}
+
+let realtimeTimer = null;
+
+function startRealtime() {
+  if (realtimeTimer) return;
+  presenceService.start();
+  realtimeTimer = window.setInterval(syncFromRemote, 3000);
+}
+
+function stopRealtime() {
+  if (realtimeTimer) {
+    window.clearInterval(realtimeTimer);
+    realtimeTimer = null;
+  }
+  presenceService.stop();
 }
 
 // 3. Каркас страницы
@@ -89,7 +121,7 @@ function renderShell() {
 
   const currentUser = usersService.getCurrentUser();
   const header = currentUser
-    ? createAppHeader({ store, usersService, onLogout: handleLogout })
+    ? createAppHeader({ store, usersService, onLogout: handleLogout, presenceService })
     : null;
   const tabBar = currentUser ? createTabBar(getNavigationItems(currentUser)) : null;
 
@@ -113,6 +145,7 @@ function renderShell() {
 async function handleAuthenticated() {
   await chatService.hydrate();
   ensureCurrentDevice();
+  startRealtime();
   renderShell();
   router.navigate('/feed');
 }
@@ -120,6 +153,7 @@ async function handleAuthenticated() {
 function handleLogout() {
   authService.logout();
   chatService.clearCache();
+  stopRealtime();
   renderShell();
   router.navigate('/login');
 }
@@ -165,7 +199,7 @@ const router = createRouter({
       const pending = createDevicePendingView({
         usersService,
         devicesService,
-        onRetry: checkDeviceAgain,
+        onRetry: syncFromRemote,
       });
       viewRoot.innerHTML = pending.html;
       return pending.mount(viewRoot);
@@ -186,5 +220,6 @@ const router = createRouter({
 
 await chatService.hydrate();
 ensureCurrentDevice();
+startRealtime();
 renderShell();
 router.start();

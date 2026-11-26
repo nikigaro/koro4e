@@ -1,5 +1,5 @@
-/** Маленький счётчик онлайна в шапке. Пока считается по числу пользователей. */
-export function createOnlineCounter({ store, usersService }) {
+/** Маленький счётчик онлайна в шапке. */
+export function createOnlineCounter({ store, usersService, presenceService }) {
   const html = `
     <div class="online-counter" title="Онлайн">
       <span class="online-counter__dot" aria-hidden="true"></span>
@@ -11,11 +11,9 @@ export function createOnlineCounter({ store, usersService }) {
     const counter = root.querySelector('[data-online-count]');
 
     function render() {
-      const total = usersService.listUsers().length;
-      const online = total > 0
-        ? Math.max(1, Math.min(total, Math.round(total * 0.13)))
-        : 0;
-      counter.textContent = `${online}/${total}`;
+      const users = usersService.listUsers();
+      const online = users.filter((user) => presenceService.isOnline(user.id)).length;
+      counter.textContent = `${online}/${users.length}`;
     }
 
     render();

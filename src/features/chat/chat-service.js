@@ -63,6 +63,18 @@ export function createChatService({ store, usersService }) {
     cipher.invalidate();
   }
 
+  /** Расшифровывает сообщения, пришедшие из другой вкладки или браузера. */
+  async function decryptMissing() {
+    const messages = store.getState().messages ?? [];
+    const missing = messages.filter((message) => !decryptedTexts.has(message.id));
+    if (!missing.length) return false;
+
+    await Promise.all(missing.map(async (message) => {
+      decryptedTexts.set(message.id, await cipher.decrypt(message.text));
+    }));
+    return true;
+  }
+
   function currentUserId() {
     return usersService.getCurrentUser()?.id ?? null;
   }
@@ -145,6 +157,7 @@ export function createChatService({ store, usersService }) {
   return {
     hydrate,
     clearCache,
+    decryptMissing,
     listMessages,
     listConversations,
     send,

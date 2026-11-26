@@ -19,5 +19,7 @@ export function renderAvatar(user, size = 'normal') {
     ? `<img class="avatar__image" src="${escapeHtml(user.avatar)}" alt="" />`
     : initials;
 
-  return `<span class="avatar avatar--${size}${isImage ? ' avatar--image' : ''}" style="--avatar-color: ${color}" aria-hidden="true">${content}</span>`;
+  const online = user.isOnline === true;
+
+  return `<span class="avatar avatar--${size}${isImage ? ' avatar--image' : ''} avatar--${online ? 'online' : 'offline'}" style="--avatar-color: ${color}" aria-hidden="true">${content}</span>`;
 }

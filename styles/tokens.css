@@ -21,6 +21,8 @@
   --color-accent-hover: #1cc4a3;
   --color-accent-soft: #e2faf4;
   --color-on-accent: #000000;
+  --color-online-ring: #16a34a;
+  --color-offline-ring: #6b7280;
   --color-like: #e5486b;
   --color-danger: #dc2626;
   --color-header-bg: rgba(255, 255, 255, 0.9);
@@ -56,6 +58,8 @@
   --color-accent-hover: #4ee7c8;
   --color-accent-soft: #0d2b26;
   --color-on-accent: #ffffff;
+  --color-online-ring: #4ade80;
+  --color-offline-ring: #9ca3af;
   --color-like: #ff6b8a;
   --color-danger: #ff6b6b;
   --color-header-bg: rgba(0, 0, 0, 0.9);
