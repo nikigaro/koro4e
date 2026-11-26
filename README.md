@@ -145,6 +145,8 @@ koro4e/
 3. При первом push в `main` workflow `.github/workflows/deploy.yml` сам соберёт и опубликует сайт.
 4. Адрес будет вида `https://<логин>.github.io/<репозиторий>/`.
 
+Автообновление: после каждого изменения в коде достаточно выполнить `powershell -ExecutionPolicy Bypass -File .\sync.ps1`. Скрипт сам коммитит и пушит в `main`, а GitHub Actions автоматически перевыкладывает сайт.
+
 Файл `.nojekyll` отключает обработку Jekyll, чтобы ассеты и ES-модули публиковались как есть. Supabase доступен и с GitHub Pages: запросы идут с origin `https://<логин>.github.io`, CORS у Supabase по умолчанию разрешён.
 
 Помни: теперь данные доступны всем, у кого есть публичный ключ из `src/config/supabase.js`. Для реального проекта нужно включить Supabase Auth и закрыть политики RLS.
