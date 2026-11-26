@@ -6,10 +6,9 @@ export const CHAT_MESSAGE_LIMIT = 1000;
 /** Личные сообщения: переписки, отправка и согласие на вход в чат. */
 export function createChatService({ store, usersService }) {
   const cipher = createMessageCipher({
-    getSecret: () => {
-      const user = usersService.getCurrentUser();
-      return user?.auth ? `${user.auth.salt}:${user.auth.hash}` : 'koroche';
-    },
+    getSecrets: () => (usersService.listUsers() ?? [])
+      .filter((user) => user?.auth)
+      .map((user) => `${user.auth.salt}:${user.auth.hash}`),
   });
 
   // Расшифрованные тексты живут только в памяти, в localStorage лежит шифртекст.

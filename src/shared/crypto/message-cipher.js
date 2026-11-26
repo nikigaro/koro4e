@@ -1,3 +1,4 @@
+const SHARED_SECRET = 'koroche-shared-v1';
 const PREFIX = 'enc:v1:';
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -10,48 +11,55 @@ function fromBase64(value) {
   return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
 }
 
+async function deriveKey(secret) {
+  const material = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    'PBKDF2',
+    false,
+    ['deriveKey'],
+  );
+
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: encoder.encode('koroche-chat-v1'),
+      iterations: 100_000,
+      hash: 'SHA-256',
+    },
+    material,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  );
+}
+
 /**
- * Шифрование сообщений при хранении: AES-GCM, ключ выводится из секрета аккаунта.
- * Защищает от прямого чтения localStorage, но не от доступа к самому аккаунту.
+ * Шифрование сообщений при хранении. Новые сообщения шифруются общим ключом
+ * приложения, поэтому их видит любой участник. Старые сообщения пробуем открыть
+ * ключами всех аккаунтов, чтобы ничего не потерять при обновлении.
  */
-export function createMessageCipher({ getSecret }) {
-  let cachedSecret = null;
-  let cachedKey = null;
+export function createMessageCipher({ getSecrets } = {}) {
+  let cachedSignature = null;
+  let cachedKeys = null;
 
-  async function getKey() {
-    const secret = String(getSecret() ?? 'koroche');
-    if (cachedKey && cachedSecret === secret) return cachedKey;
+  async function getKeys() {
+    const accountSecrets = (getSecrets?.() ?? []).filter(Boolean).map(String);
+    const secrets = [...new Set([SHARED_SECRET, ...accountSecrets])];
+    const signature = secrets.join('|');
+    if (cachedKeys && cachedSignature === signature) return cachedKeys;
 
-    const material = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(secret),
-      'PBKDF2',
-      false,
-      ['deriveKey'],
-    );
-
-    cachedKey = await crypto.subtle.deriveKey(
-      {
-        name: 'PBKDF2',
-        salt: encoder.encode('koroche-chat-v1'),
-        iterations: 100_000,
-        hash: 'SHA-256',
-      },
-      material,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt'],
-    );
-    cachedSecret = secret;
-    return cachedKey;
+    cachedKeys = await Promise.all(secrets.map(deriveKey));
+    cachedSignature = signature;
+    return cachedKeys;
   }
 
   async function encrypt(text) {
-    const key = await getKey();
+    const keys = await getKeys();
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
-      key,
+      keys[0],
       encoder.encode(String(text)),
     );
 
@@ -62,23 +70,25 @@ export function createMessageCipher({ getSecret }) {
     const raw = String(value ?? '');
     if (!raw.startsWith(PREFIX)) return raw;
 
-    try {
-      const key = await getKey();
-      const [ivPart, dataPart] = raw.slice(PREFIX.length).split('.');
-      const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: fromBase64(ivPart) },
-        key,
-        fromBase64(dataPart),
-      );
-      return decoder.decode(decrypted);
-    } catch {
-      return raw;
+    const keys = await getKeys();
+    const [ivPart, dataPart] = raw.slice(PREFIX.length).split('.');
+    const iv = fromBase64(ivPart);
+    const data = fromBase64(dataPart);
+
+    for (const key of keys) {
+      try {
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+        return decoder.decode(decrypted);
+      } catch {
+        // Пробуем следующий ключ.
+      }
     }
+    return raw;
   }
 
   function invalidate() {
-    cachedSecret = null;
-    cachedKey = null;
+    cachedSignature = null;
+    cachedKeys = null;
   }
 
   return { encrypt, decrypt, invalidate };
