@@ -75,8 +75,12 @@ function ensureCurrentDevice() {
 }
 
 const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices'];
+const POLL_INTERVAL = 1000;
+let syncing = false;
 
 async function syncFromRemote() {
+  if (syncing) return;
+  syncing = true;
   try {
     const remote = await loadRemoteState();
     if (!remote) return;
@@ -94,15 +98,31 @@ async function syncFromRemote() {
     }
   } catch (error) {
     console.warn('Не удалось обновить данные из Supabase:', error);
+  } finally {
+    syncing = false;
   }
 }
+
+const syncChannel = typeof BroadcastChannel === 'function'
+  ? new BroadcastChannel('koroche-sync')
+  : null;
+
+store.subscribe(() => syncChannel?.postMessage('changed'));
+syncChannel?.addEventListener('message', () => syncFromRemote());
+
+function handleVisibility() {
+  if (document.visibilityState === 'visible') syncFromRemote();
+}
+
+document.addEventListener('visibilitychange', handleVisibility);
+window.addEventListener('focus', handleVisibility);
 
 let realtimeTimer = null;
 
 function startRealtime() {
   if (realtimeTimer) return;
   presenceService.start();
-  realtimeTimer = window.setInterval(syncFromRemote, 3000);
+  realtimeTimer = window.setInterval(syncFromRemote, POLL_INTERVAL);
 }
 
 function stopRealtime() {

@@ -24,7 +24,7 @@ export function createDevicePendingView({ usersService, devicesService, onRetry 
 
   function mount(root) {
     const button = root.querySelector('[data-device-retry]');
-    const interval = window.setInterval(onRetry, 3000);
+    const interval = window.setInterval(onRetry, 1000);
 
     function handleClick() {
       onRetry();
