@@ -15,27 +15,45 @@ function headers(extra = {}) {
   };
 }
 
-// Пароли и соль остаются только в браузере, в облако уходят только данные.
-function withoutAuth(state) {
-  return {
-    ...state,
-    users: (state.users ?? []).map(({ auth, ...user }) => user),
-  };
+// Сессия остаётся локальной, остальные данные, включая хеши паролей, синхронизируются.
+function forRemote(state) {
+  const { sessionUserId, rememberMe, ...data } = state;
+  return data;
 }
 
-/** Соединяет локальную сессию и фильтры с данными из Supabase. */
+function mergeById(local = [], remote = []) {
+  const merged = new Map();
+  remote.forEach((item) => merged.set(item.id, item));
+  local.forEach((item) => merged.set(item.id, { ...merged.get(item.id), ...item }));
+  return [...merged.values()];
+}
+
+function mergeUsers(local = [], remote = []) {
+  const merged = new Map();
+  remote.forEach((user) => merged.set(user.id, user));
+  local.forEach((user) => {
+    const saved = merged.get(user.id);
+    merged.set(user.id, { ...saved, ...user, auth: user.auth ?? saved?.auth });
+  });
+  return [...merged.values()];
+}
+
+/** Объединяет локальные данные и Supabase, не теряя аккаунты из-за пустого облака. */
 export function mergeStates(local, remote) {
   if (!remote || typeof remote !== 'object') return local;
-
-  const localAuth = new Map((local.users ?? []).map((user) => [user.id, user.auth]));
 
   return {
     ...local,
     ...remote,
-    users: (remote.users ?? local.users ?? []).map((user) => ({
-      ...user,
-      auth: localAuth.get(user.id) ?? user.auth,
-    })),
+    users: mergeUsers(local.users, remote.users),
+    posts: mergeById(local.posts, remote.posts),
+    media: mergeById(local.media, remote.media),
+    audio: mergeById(local.audio, remote.audio),
+    messages: mergeById(local.messages, remote.messages),
+    chatAgreements: [...new Set([
+      ...(local.chatAgreements ?? []),
+      ...(remote.chatAgreements ?? []),
+    ])],
     sessionUserId: local.sessionUserId,
     rememberMe: local.rememberMe,
   };
@@ -58,7 +76,7 @@ export async function saveRemoteState(state) {
     headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
     body: JSON.stringify([{
       id: SUPABASE_STATE_ID,
-      data: withoutAuth(state),
+      data: forRemote(state),
       updated_at: new Date().toISOString(),
     }]),
   });
