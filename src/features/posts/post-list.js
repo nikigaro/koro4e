@@ -1,5 +1,6 @@
 import { renderPostCard } from './post-card.js';
 import { renderEmptyState } from '../../shared/ui/empty-state.js';
+import { isCreator } from '../users/roles.js';
 
 /**
  * Переиспользуемый список постов: рендер, делегирование событий и подписка на store.
@@ -10,12 +11,15 @@ export function createPostList({ getPosts, usersService, postsService, store, em
     const posts = getPosts();
     if (posts.length === 0) return renderEmptyState(emptyMessage);
 
+    const me = usersService.getCurrentUser();
+
     return posts
       .map((post) => renderPostCard({
         post,
         author: usersService.getUserById(post.authorId),
         wallOwner: post.wallOwnerId ? usersService.getUserById(post.wallOwnerId) : null,
         users: usersService.listUsers(),
+        canDelete: Boolean(me && (me.id === post.authorId || isCreator(me))),
       }))
       .join('');
   }

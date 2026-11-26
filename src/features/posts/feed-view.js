@@ -3,9 +3,9 @@ import { createPostList } from './post-list.js';
 import { createNewsPanel } from '../news/news-panel.js';
 
 /** Представление общей ленты. */
-export function createFeedView({ store, usersService, postsService }) {
+export function createFeedView({ store, usersService, postsService, newsService }) {
   const composer = createPostComposer({ postsService });
-  const newsPanel = createNewsPanel();
+  const newsPanel = createNewsPanel({ store, newsService });
   const postList = createPostList({
     getPosts: () => postsService.list(),
     usersService,

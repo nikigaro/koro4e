@@ -1,4 +1,5 @@
 import { createId } from '../../shared/utils/create-id.js';
+import { isCreator } from '../users/roles.js';
 
 export const MAX_POST_LENGTH = 280;
 
@@ -54,10 +55,16 @@ export function createPostsService({ store, usersService }) {
   }
 
   function remove(id) {
+    const me = usersService.getCurrentUser();
+    const post = list().find((item) => item.id === id);
+    if (!me || !post) return false;
+    if (post.authorId !== me.id && !isCreator(me)) return false;
+
     store.setState((state) => ({
       ...state,
-      posts: state.posts.filter((post) => post.id !== id),
+      posts: state.posts.filter((item) => item.id !== id),
     }));
+    return true;
   }
 
   return { list, listByAuthor, listByWall, add, toggleLike, remove };

@@ -5,7 +5,7 @@ import { renderAttachment } from './attachments.js';
 import { renderRichText } from '../../shared/utils/render-rich-text.js';
 
 /** Чистая функция: пост + автор -> HTML карточки. Никаких сайд-эффектов. */
-export function renderPostCard({ post, author, wallOwner, users = [] }) {
+export function renderPostCard({ post, author, wallOwner, users = [], canDelete = false }) {
   const text = renderRichText(post.text, users, { tags: true });
   const wallUrl = `#/wall/${encodeURIComponent(author.id)}`;
   const isoDate = new Date(post.createdAt).toISOString();
@@ -41,6 +41,7 @@ export function renderPostCard({ post, author, wallOwner, users = [] }) {
             <img class="action--like__icon" src="assets/icons/xd-hype.png" alt="" aria-hidden="true" />
             <span>${post.likes}</span>
           </button>
+          ${canDelete ? `
           <button
             class="action action--delete"
             type="button"
@@ -50,6 +51,7 @@ export function renderPostCard({ post, author, wallOwner, users = [] }) {
           >
             Удалить
           </button>
+          ` : ''}
         </footer>
       </div>
     </article>

@@ -54,6 +54,7 @@ export function mergeStates(local, remote) {
     ...remote,
     users: mergeUsers(local.users, remote.users),
     posts: mergeById(local.posts, remote.posts),
+    news: mergeById(local.news, remote.news),
     media: mergeById(local.media, remote.media),
     audio: mergeById(local.audio, remote.audio),
     messages: mergeById(local.messages, remote.messages),

@@ -1,5 +1,6 @@
 import { seedUsers } from '../features/users/users-seed.js';
 import { seedPosts } from '../features/posts/posts-seed.js';
+import { seedNews } from '../features/news/news-seed.js';
 
 const STORAGE_KEY = 'koroche.state.v1';
 
@@ -12,6 +13,7 @@ function createInitialState() {
     sessionUserId: null,
     rememberMe: false,
     posts: seedPosts,
+    news: seedNews,
     media: [],
     audio: [],
     messages: [],
@@ -35,6 +37,7 @@ export function loadState() {
 
     const savedPosts = Array.isArray(saved.posts) ? saved.posts : seedPosts;
     const posts = savedPosts.filter((post) => userIds.has(post.authorId));
+    const news = Array.isArray(saved.news) ? saved.news : seedNews;
 
     const media = (Array.isArray(saved.media) ? saved.media : [])
       // Временные ссылки на большие файлы не переживают перезагрузку.
@@ -63,6 +66,7 @@ export function loadState() {
       rememberMe: saved.rememberMe === true,
       sessionUserId,
       posts,
+      news,
       media,
       audio,
       messages,

@@ -13,6 +13,7 @@ import { createFeedView } from '../features/posts/feed-view.js';
 import { createWallView } from '../features/wall/wall-view.js';
 import { createProfileView } from '../features/profile/profile-view.js';
 import { createInfoView } from '../features/info/info-view.js';
+import { createNewsService } from '../features/news/news-service.js';
 import { createMediaService } from '../features/media/media-service.js';
 import { createMediaView } from '../features/media/media-view.js';
 import { createMusicService } from '../features/music/music-service.js';
@@ -61,6 +62,7 @@ if (!remoteState || Object.keys(remoteState).length === 0) {
 const usersService = createUsersService(store);
 const presenceService = createPresenceService({ store, usersService });
 const postsService = createPostsService({ store, usersService });
+const newsService = createNewsService({ store, usersService });
 const authService = createAuthService({ store, usersService });
 const mediaService = createMediaService({ store, usersService });
 const musicService = createMusicService({ store, usersService });
@@ -72,7 +74,7 @@ function ensureCurrentDevice() {
   if (user) devicesService.ensureDevice(user.id);
 }
 
-const SYNC_KEYS = ['users', 'posts', 'media', 'audio', 'messages', 'chatAgreements', 'devices'];
+const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices'];
 
 async function syncFromRemote() {
   try {
@@ -161,7 +163,7 @@ function handleLogout() {
 // 4. Маршруты
 const router = createRouter({
   routes: {
-    '/feed': () => createFeedView({ store, usersService, postsService }),
+    '/feed': () => createFeedView({ store, usersService, postsService, newsService }),
     '/profile': () => createProfileView({ store, usersService, postsService, devicesService }),
     '/rules': () => createInfoView({ page: 'rules' }),
     '/media': () => createMediaView({ store, mediaService }),
