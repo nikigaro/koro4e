@@ -1,0 +1,64 @@
+@font-face {
+  font-family: "Equilibrist";
+  src: url("../assets/fonts/equilibrist-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  --font-sans: "Equilibrist", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --color-bg: #f3f4f8;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8f8fc;
+  --color-text: #1b1f24;
+  --color-muted: #6b7280;
+  --color-border: #e6e7ee;
+  --color-accent: #23dcb7;
+  --color-accent-hover: #1cc4a3;
+  --color-accent-soft: #e2faf4;
+  --color-on-accent: #000000;
+  --color-like: #e5486b;
+  --color-danger: #dc2626;
+  --color-header-bg: rgba(255, 255, 255, 0.9);
+  --color-tab-bg: #eceef4;
+  --color-tab-bg-hover: #e4e6ee;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --content-width: 1720px;
+  --transition: 150ms ease;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #000000;
+  --color-surface: #000000;
+  --color-surface-alt: #101010;
+  --color-text: #ffffff;
+  --color-muted: #9a9a9a;
+  --color-border: #2a2a2a;
+  --color-accent: #23dcb7;
+  --color-accent-hover: #4ee7c8;
+  --color-accent-soft: #0d2b26;
+  --color-on-accent: #ffffff;
+  --color-like: #ff6b8a;
+  --color-danger: #ff6b6b;
+  --color-header-bg: rgba(0, 0, 0, 0.9);
+  --color-tab-bg: #141414;
+  --color-tab-bg-hover: #202020;
+}
