@@ -19,6 +19,8 @@ import { createMusicView } from '../features/music/music-view.js';
 import { createChatService } from '../features/chat/chat-service.js';
 import { createChatView } from '../features/chat/chat-view.js';
 import { createChatThreadView } from '../features/chat/chat-thread-view.js';
+import { createDevicesService } from '../features/devices/device-service.js';
+import { createDevicePendingView } from '../features/devices/device-pending-view.js';
 import { createAuthService } from '../features/auth/auth-service.js';
 import { createAuthView } from '../features/auth/auth-view.js';
 
@@ -61,6 +63,21 @@ const authService = createAuthService({ store, usersService });
 const mediaService = createMediaService({ store, usersService });
 const musicService = createMusicService({ store, usersService });
 const chatService = createChatService({ store, usersService });
+const devicesService = createDevicesService({ store, usersService });
+
+function ensureCurrentDevice() {
+  const user = usersService.getCurrentUser();
+  if (user) devicesService.ensureDevice(user.id);
+}
+
+async function checkDeviceAgain() {
+  try {
+    const remote = await loadRemoteState();
+    if (remote) store.setState(mergeStates(store.getState(), remote));
+  } catch (error) {
+    console.warn('Не удалось проверить устройство:', error);
+  }
+}
 
 // 3. Каркас страницы
 const app = document.querySelector('#app');
@@ -95,6 +112,7 @@ function renderShell() {
 
 async function handleAuthenticated() {
   await chatService.hydrate();
+  ensureCurrentDevice();
   renderShell();
   router.navigate('/feed');
 }
@@ -110,7 +128,7 @@ function handleLogout() {
 const router = createRouter({
   routes: {
     '/feed': () => createFeedView({ store, usersService, postsService }),
-    '/profile': () => createProfileView({ store, usersService, postsService }),
+    '/profile': () => createProfileView({ store, usersService, postsService, devicesService }),
     '/rules': () => createInfoView({ page: 'rules' }),
     '/media': () => createMediaView({ store, mediaService }),
     '/ideas': () => createInfoView({ page: 'ideas' }),
@@ -143,6 +161,16 @@ const router = createRouter({
       return null;
     }
 
+    if (isAuthenticated && !devicesService.isAllowed(currentUser.id)) {
+      const pending = createDevicePendingView({
+        usersService,
+        devicesService,
+        onRetry: checkDeviceAgain,
+      });
+      viewRoot.innerHTML = pending.html;
+      return pending.mount(viewRoot);
+    }
+
     const isAdminRoute = path === '/admin';
     const isAdmin = currentUser
       && (currentUser.handle === 'murs' || currentUser.username === 'murs');
@@ -157,5 +185,6 @@ const router = createRouter({
 });
 
 await chatService.hydrate();
+ensureCurrentDevice();
 renderShell();
 router.start();

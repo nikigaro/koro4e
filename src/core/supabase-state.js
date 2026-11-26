@@ -50,6 +50,7 @@ export function mergeStates(local, remote) {
     media: mergeById(local.media, remote.media),
     audio: mergeById(local.audio, remote.audio),
     messages: mergeById(local.messages, remote.messages),
+    devices: mergeById(local.devices, remote.devices),
     chatAgreements: [...new Set([
       ...(local.chatAgreements ?? []),
       ...(remote.chatAgreements ?? []),

@@ -3,6 +3,7 @@ import { renderAvatar } from '../../shared/ui/avatar.js';
 import { escapeHtml } from '../../shared/utils/escape-html.js';
 import { readImageFile } from '../../shared/utils/read-image-file.js';
 import { renderUserLink } from '../../shared/utils/render-rich-text.js';
+import { createDevicesView } from '../devices/device-view.js';
 import { createAboutEditor } from './about-editor.js';
 
 function formatAbout(text) {
@@ -11,7 +12,7 @@ function formatAbout(text) {
 }
 
 /** Профиль: баннер, аватар, «О себе» и редактирование всего этого. */
-export function createProfileView({ store, usersService, postsService }) {
+export function createProfileView({ store, usersService, postsService, devicesService }) {
   const user = usersService.getCurrentUser();
   let rootNode = null;
 
@@ -41,6 +42,8 @@ export function createProfileView({ store, usersService, postsService }) {
     onSave: (text) => applyPatch({ about: text }),
   });
 
+  const devicesView = createDevicesView({ store, usersService, devicesService });
+
   const html = `
     <section class="profile">
       <div class="profile__banner" data-profile-banner title="Нарисовать баннер">
@@ -68,6 +71,8 @@ export function createProfileView({ store, usersService, postsService }) {
           <span>хайпа получено</span>
         </div>
       </div>
+
+      ${devicesView.html}
 
       ${avatarPad.html}
       ${bannerPad.html}
@@ -104,6 +109,7 @@ export function createProfileView({ store, usersService, postsService }) {
     const avatarPadControls = avatarPad.mount(root);
     const bannerPadControls = bannerPad.mount(root);
     const cleanupAbout = aboutEditor.mount(root);
+    const cleanupDevices = devicesView.mount(root);
     const postsCount = root.querySelector('[data-profile-posts]');
     const avatarChoice = root.querySelector('[data-avatar-choice]');
     const avatarInput = root.querySelector('[data-avatar-input]');
@@ -163,6 +169,7 @@ export function createProfileView({ store, usersService, postsService }) {
       avatarPadControls.destroy();
       bannerPadControls.destroy();
       cleanupAbout();
+      cleanupDevices();
       rootNode = null;
     };
   }
