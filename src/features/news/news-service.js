@@ -62,6 +62,7 @@ export function createNewsService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       news: (state.news ?? []).filter((item) => item.id !== id),
+      deletedIds: [...new Set([...(state.deletedIds ?? []), id])].slice(-1000),
     }));
     return true;
   }

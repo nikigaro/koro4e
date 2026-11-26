@@ -21,11 +21,11 @@ function forRemote(state) {
   return data;
 }
 
-function mergeById(local = [], remote = []) {
+function mergeById(local = [], remote = [], deleted = new Set()) {
   const merged = new Map();
   remote.forEach((item) => merged.set(item.id, item));
   local.forEach((item) => merged.set(item.id, { ...merged.get(item.id), ...item }));
-  return [...merged.values()];
+  return [...merged.values()].filter((item) => !deleted.has(item.id));
 }
 
 function mergeUsers(local = [], remote = []) {
@@ -45,24 +45,30 @@ function mergeUsers(local = [], remote = []) {
   return [...merged.values()];
 }
 
-/** Объединяет локальные данные и Supabase, не теряя аккаунты из-за пустого облака. */
+/** Объединение данных с учётом удалений, чтобы удалённое не возвращалось из Supabase. */
 export function mergeStates(local, remote) {
   if (!remote || typeof remote !== 'object') return local;
+
+  const deleted = new Set([
+    ...(local.deletedIds ?? []),
+    ...(remote.deletedIds ?? []),
+  ]);
 
   return {
     ...local,
     ...remote,
     users: mergeUsers(local.users, remote.users),
-    posts: mergeById(local.posts, remote.posts),
-    news: mergeById(local.news, remote.news),
-    media: mergeById(local.media, remote.media),
-    audio: mergeById(local.audio, remote.audio),
-    messages: mergeById(local.messages, remote.messages),
-    devices: mergeById(local.devices, remote.devices),
+    posts: mergeById(local.posts, remote.posts, deleted),
+    news: mergeById(local.news, remote.news, deleted),
+    media: mergeById(local.media, remote.media, deleted),
+    audio: mergeById(local.audio, remote.audio, deleted),
+    messages: mergeById(local.messages, remote.messages, deleted),
+    devices: mergeById(local.devices, remote.devices, deleted),
     chatAgreements: [...new Set([
       ...(local.chatAgreements ?? []),
       ...(remote.chatAgreements ?? []),
     ])],
+    deletedIds: [...deleted].slice(-1000),
     sessionUserId: local.sessionUserId,
     rememberMe: local.rememberMe,
   };

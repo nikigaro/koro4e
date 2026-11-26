@@ -49,7 +49,7 @@ store.subscribe(() => {
     } catch (error) {
       console.warn('Не удалось сохранить в Supabase:', error);
     }
-  }, 600);
+  }, 150);
 });
 
 if (!remoteState || Object.keys(remoteState).length === 0) {
@@ -74,7 +74,7 @@ function ensureCurrentDevice() {
   if (user) devicesService.ensureDevice(user.id);
 }
 
-const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices'];
+const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices', 'deletedIds'];
 const POLL_INTERVAL = 1000;
 let syncing = false;
 

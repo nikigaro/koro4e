@@ -63,6 +63,7 @@ export function createPostsService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       posts: state.posts.filter((item) => item.id !== id),
+      deletedIds: [...new Set([...(state.deletedIds ?? []), id])].slice(-1000),
     }));
     return true;
   }

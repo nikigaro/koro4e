@@ -54,6 +54,7 @@ export function createMusicService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       audio: (state.audio ?? []).filter((track) => track.id !== id),
+      deletedIds: [...new Set([...(state.deletedIds ?? []), id])].slice(-1000),
     }));
   }
 

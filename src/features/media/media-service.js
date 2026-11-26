@@ -68,6 +68,7 @@ export function createMediaService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       media: (state.media ?? []).filter((item) => item.id !== id),
+      deletedIds: [...new Set([...(state.deletedIds ?? []), id])].slice(-1000),
     }));
   }
 
