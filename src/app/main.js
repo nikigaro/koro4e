@@ -245,6 +245,12 @@ const router = createRouter({
   },
 });
 
+// При входе на сайт всегда начинаем с ленты, а не с чата.
+const entryHash = location.hash;
+if (!entryHash || entryHash === '#/chat' || entryHash.startsWith('#/chat/')) {
+  location.hash = '#/feed';
+}
+
 await chatService.hydrate();
 ensureCurrentDevice();
 startRealtime();
