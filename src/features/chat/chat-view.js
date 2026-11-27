@@ -3,11 +3,11 @@ import { formatTime } from '../../shared/utils/format-time.js';
 import { renderAvatar } from '../../shared/ui/avatar.js';
 import { createChatAgreement } from './chat-agreement.js';
 
-function renderConversation({ user, last }, currentUserId) {
+function renderConversation({ user, last, pinned }, currentUserId) {
   const prefix = last.fromId === currentUserId ? 'Вы: ' : '';
 
   return `
-    <article class="chat-card">
+    <article class="chat-card ${pinned ? 'chat-card--pinned' : ''}">
       <a class="chat-card__link" href="#/chat/${encodeURIComponent(user.id)}">
         <div class="chat-card__head">
           ${renderAvatar(user)}
@@ -18,6 +18,16 @@ function renderConversation({ user, last }, currentUserId) {
         </div>
         <p class="chat-card__preview">${prefix}${escapeHtml(last.text)}</p>
       </a>
+      ${pinned ? '<span class="chat-card__badge">Закреплено</span>' : ''}
+      <button
+        class="chat-card__pin ${pinned ? 'is-active' : ''}"
+        type="button"
+        data-action="pin-chat"
+        data-id="${escapeHtml(user.id)}"
+        aria-pressed="${pinned}"
+        aria-label="${pinned ? 'Открепить чат' : 'Закрепить чат'}"
+        title="${pinned ? 'Открепить чат' : 'Закрепить чат'}"
+      >★</button>
       <button
         class="chat-card__delete"
         type="button"
@@ -103,7 +113,9 @@ export function createChatView({ store, usersService, chatService }) {
     }
 
     function handleListClick(event) {
+      const pin = event.target.closest('[data-action="pin-chat"]');
       const button = event.target.closest('[data-action="delete-chat"]');
+      if (pin) chatService.togglePin(pin.dataset.id);
       if (!button) return;
       if (window.confirm('Удалить всю переписку?')) {
         chatService.removeConversation(button.dataset.id);

@@ -79,7 +79,7 @@ function ensureCurrentDevice() {
   if (user) devicesService.ensureDevice(user.id);
 }
 
-const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices', 'deletedIds', 'bans'];
+const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'chatPins', 'devices', 'deletedIds', 'bans'];
 const POLL_INTERVAL = 1000;
 let syncPromise = null;
 

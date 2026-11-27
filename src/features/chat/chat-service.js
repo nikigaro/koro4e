@@ -91,9 +91,53 @@ export function createChatService({ store, usersService }) {
       .map(withPlainText);
   }
 
+  function pinnedIds() {
+    const me = currentUserId();
+    if (!me) return new Set();
+    return new Set((store.getState().chatPins ?? [])
+      .filter((pin) => pin.ownerId === me)
+      .map((pin) => pin.userId));
+  }
+
+  function isPinned(userId) {
+    return pinnedIds().has(userId);
+  }
+
+  function togglePin(userId) {
+    const me = currentUserId();
+    if (!me || !userId || me === userId) return false;
+
+    const existing = (store.getState().chatPins ?? []).find(
+      (pin) => pin.ownerId === me && pin.userId === userId,
+    );
+
+    if (existing) {
+      store.setState((state) => ({
+        ...state,
+        chatPins: state.chatPins.filter((pin) => pin.id !== existing.id),
+        deletedIds: [...new Set([...(state.deletedIds ?? []), existing.id])].slice(-1000),
+      }));
+      return false;
+    }
+
+    store.setState((state) => ({
+      ...state,
+      chatPins: [...(state.chatPins ?? []), {
+        id: createId('pin'),
+        ownerId: me,
+        userId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }],
+    }));
+    return true;
+  }
+
   function listConversations() {
     const me = currentUserId();
     if (!me) return [];
+
+    const pins = pinnedIds();
 
     const lastByUser = new Map();
     (store.getState().messages ?? []).forEach((message) => {
@@ -109,8 +153,12 @@ export function createChatService({ store, usersService }) {
       .map(([userId, last]) => ({
         user: usersService.getUserById(userId),
         last: withPlainText(last),
+        pinned: pins.has(userId),
       }))
-      .sort((left, right) => right.last.createdAt - left.last.createdAt);
+      .sort((left, right) => (
+        Number(right.pinned) - Number(left.pinned)
+        || right.last.createdAt - left.last.createdAt
+      ));
   }
 
   async function send(toId, text) {
@@ -180,6 +228,8 @@ export function createChatService({ store, usersService }) {
     listMessages,
     listConversations,
     removeConversation,
+    isPinned,
+    togglePin,
     send,
     hasAcceptedAgreement,
     acceptAgreement,

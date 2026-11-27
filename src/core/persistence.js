@@ -18,6 +18,7 @@ function createInitialState() {
     audio: [],
     messages: [],
     chatAgreements: [],
+    chatPins: [],
     devices: [],
     deletedIds: [],
     bans: [],
@@ -63,6 +64,8 @@ export function loadState() {
     const chatAgreements = (Array.isArray(saved.chatAgreements) ? saved.chatAgreements : [])
       .filter((userId) => userIds.has(userId));
 
+    const chatPins = Array.isArray(saved.chatPins) ? saved.chatPins : [];
+
     const devices = (Array.isArray(saved.devices) ? saved.devices : [])
       .filter((device) => userIds.has(device.userId));
 
@@ -83,6 +86,7 @@ export function loadState() {
       audio,
       messages,
       chatAgreements,
+      chatPins,
       devices,
       deletedIds,
       bans,

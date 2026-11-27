@@ -1891,10 +1891,24 @@
   -webkit-line-clamp: 2;
 }
 
+.chat-card--pinned {
+  border-color: var(--color-accent);
+}
+
+.chat-card__badge {
+  display: inline-flex;
+  margin-top: var(--space-1);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.chat-card__pin,
 .chat-card__delete {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
   width: 26px;
   height: 26px;
   display: grid;
@@ -1903,8 +1917,24 @@
   border-radius: var(--radius-pill);
   background: var(--color-surface-alt);
   color: var(--color-muted);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
+}
+
+.chat-card__pin {
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.chat-card__pin.is-active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.chat-card__delete {
+  right: var(--space-2);
+  bottom: var(--space-2);
+  font-size: 16px;
 }
 
 .chat-card__delete:hover {
