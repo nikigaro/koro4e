@@ -105,6 +105,7 @@
 }
 
 .online-counter {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -112,6 +113,7 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  cursor: default;
 }
 
 .online-counter__dot {
@@ -120,6 +122,42 @@
   border-radius: 50%;
   background: var(--color-accent);
   outline: 3px solid var(--color-accent-soft);
+}
+
+.online-counter__popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: none;
+  min-width: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.online-counter:hover .online-counter__popover,
+.online-counter:focus-within .online-counter__popover {
+  display: block;
+}
+
+.online-counter__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.online-counter__empty {
+  padding: 8px;
+  color: var(--color-muted);
+  font-size: 13px;
 }
 
 .app-header__stat {
@@ -591,10 +629,6 @@
 
 .profile__name .user-link:hover {
   color: var(--color-accent);
-}
-
-.profile__name .profile__creator-link {
-  color: var(--color-creator);
 }
 
 .role-badge {

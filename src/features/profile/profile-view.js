@@ -56,7 +56,7 @@ export function createProfileView({ store, usersService, postsService, devicesSe
       <header class="profile__card">
         <div class="profile__avatar" data-profile-avatar title="Нарисовать аватар">${renderAvatar(user, 'large')}</div>
         <div class="profile__info">
-          <h1 class="profile__name">${renderUserLink(user, isCreator(user) ? 'user-link profile__creator-link' : 'user-link')}${isCreator(user) ? '<span class="role-badge">Создатель</span>' : ''}</h1>
+          <h1 class="profile__name">${renderUserLink(user)}${isCreator(user) ? '<span class="role-badge">Создатель</span>' : ''}</h1>
           <div data-profile-about>${formatAbout(user.about)}</div>
           ${aboutEditor.html}
         </div>
