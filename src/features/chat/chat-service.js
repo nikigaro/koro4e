@@ -136,6 +136,26 @@ export function createChatService({ store, usersService }) {
     return message;
   }
 
+  /** Полностью удаляет переписку с пользователем. */
+  function removeConversation(userId) {
+    const me = currentUserId();
+    if (!me || !userId || me === userId) return false;
+
+    const removedIds = (store.getState().messages ?? [])
+      .filter((message) => (
+        (message.fromId === me && message.toId === userId)
+        || (message.fromId === userId && message.toId === me)
+      ))
+      .map((message) => message.id);
+
+    store.setState((state) => ({
+      ...state,
+      messages: state.messages.filter((message) => !removedIds.includes(message.id)),
+      deletedIds: [...new Set([...(state.deletedIds ?? []), ...removedIds])].slice(-1000),
+    }));
+    return true;
+  }
+
   function hasAcceptedAgreement() {
     const me = currentUserId();
     if (!me) return false;
@@ -159,6 +179,7 @@ export function createChatService({ store, usersService }) {
     decryptMissing,
     listMessages,
     listConversations,
+    removeConversation,
     send,
     hasAcceptedAgreement,
     acceptAgreement,

@@ -1,23 +1,32 @@
 import { escapeHtml } from '../../shared/utils/escape-html.js';
 import { formatTime } from '../../shared/utils/format-time.js';
 import { renderAvatar } from '../../shared/ui/avatar.js';
-import { renderUserLink } from '../../shared/utils/render-rich-text.js';
 import { createChatAgreement } from './chat-agreement.js';
 
 function renderConversation({ user, last }, currentUserId) {
   const prefix = last.fromId === currentUserId ? 'Вы: ' : '';
 
   return `
-    <a class="chat-conversation" href="#/chat/${encodeURIComponent(user.id)}">
-      ${renderAvatar(user)}
-      <div class="chat-conversation__body">
-        <div class="chat-conversation__top">
-          <strong>${renderUserLink(user)}</strong>
-          <time>${escapeHtml(formatTime(last.createdAt))}</time>
+    <article class="chat-card">
+      <a class="chat-card__link" href="#/chat/${encodeURIComponent(user.id)}">
+        <div class="chat-card__head">
+          ${renderAvatar(user)}
+          <div class="chat-card__identity">
+            <strong>@${escapeHtml(user.handle)}</strong>
+            <time>${escapeHtml(formatTime(last.createdAt))}</time>
+          </div>
         </div>
-        <p class="chat-conversation__preview">${prefix}${escapeHtml(last.text)}</p>
-      </div>
-    </a>
+        <p class="chat-card__preview">${prefix}${escapeHtml(last.text)}</p>
+      </a>
+      <button
+        class="chat-card__delete"
+        type="button"
+        data-action="delete-chat"
+        data-id="${escapeHtml(user.id)}"
+        aria-label="Удалить переписку"
+        title="Удалить переписку"
+      >×</button>
+    </article>
   `;
 }
 
@@ -93,6 +102,14 @@ export function createChatView({ store, usersService, chatService }) {
         : '<div class="empty">Пока нет переписок. Напиши первым по @username.</div>';
     }
 
+    function handleListClick(event) {
+      const button = event.target.closest('[data-action="delete-chat"]');
+      if (!button) return;
+      if (window.confirm('Удалить всю переписку?')) {
+        chatService.removeConversation(button.dataset.id);
+      }
+    }
+
     function handleSubmit(event) {
       event.preventDefault();
       const handle = inputNode.value.trim().replace(/^@/, '').toLowerCase();
@@ -123,12 +140,14 @@ export function createChatView({ store, usersService, chatService }) {
     renderList();
     form.addEventListener('submit', handleSubmit);
     inputNode.addEventListener('input', handleInput);
+    list.addEventListener('click', handleListClick);
     const unsubscribe = store.subscribe(renderList);
 
     return () => {
       unsubscribe();
       form.removeEventListener('submit', handleSubmit);
       inputNode.removeEventListener('input', handleInput);
+      list.removeEventListener('click', handleListClick);
       cleanupAgreement();
       pageNode = null;
       inputNode = null;
