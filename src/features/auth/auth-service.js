@@ -28,10 +28,13 @@ async function hashPassword(password, salt) {
 }
 
 /** Регистрация и вход только по юзернейму и паролю. */
-export function createAuthService({ store, usersService }) {
+export function createAuthService({ store, usersService, banService }) {
   async function register({ username, password, remember }) {
     const valid = validateCredentials(username, password);
     if (valid.error) return { ok: false, error: valid.error };
+    if (banService?.isCurrentBlocked()) {
+      return { ok: false, error: 'Это устройство заблокировано' };
+    }
     if (usersService.findByUsername(valid.username)) {
       return { ok: false, error: 'Этот юзернейм уже занят' };
     }
@@ -60,8 +63,12 @@ export function createAuthService({ store, usersService }) {
   }
 
   async function login({ username, password, remember }) {
+    if (banService?.isCurrentBlocked()) {
+      return { ok: false, error: 'Аккаунт или устройство заблокировано' };
+    }
     const user = usersService.findByUsername(username);
     if (!user?.auth) return { ok: false, error: 'Неверный юзернейм или пароль' };
+    if (user.banned) return { ok: false, error: 'Этот аккаунт заблокирован' };
 
     const hash = await hashPassword(password, user.auth.salt);
     if (hash !== user.auth.hash) {

@@ -79,6 +79,7 @@ export function mergeStates(local, remote) {
       ...(remote.chatAgreements ?? []),
     ])],
     deletedIds: [...deleted].slice(-1000),
+    bans: mergeById(local.bans, remote.bans, deleted),
     sessionUserId: local.sessionUserId,
     rememberMe: local.rememberMe,
   };

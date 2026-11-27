@@ -20,6 +20,7 @@ function createInitialState() {
     chatAgreements: [],
     devices: [],
     deletedIds: [],
+    bans: [],
   };
 }
 
@@ -59,6 +60,7 @@ export function loadState() {
       .filter((device) => userIds.has(device.userId));
 
     const deletedIds = Array.isArray(saved.deletedIds) ? saved.deletedIds : [];
+    const bans = Array.isArray(saved.bans) ? saved.bans : [];
 
     const sessionUserId = saved.rememberMe === true && userIds.has(saved.sessionUserId)
       ? saved.sessionUserId
@@ -76,6 +78,7 @@ export function loadState() {
       chatAgreements,
       devices,
       deletedIds,
+      bans,
     };
 
     // Сразу фиксируем очищенное состояние, чтобы боты не вернулись.

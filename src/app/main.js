@@ -23,6 +23,9 @@ import { createChatView } from '../features/chat/chat-view.js';
 import { createChatThreadView } from '../features/chat/chat-thread-view.js';
 import { createDevicesService } from '../features/devices/device-service.js';
 import { createDevicePendingView } from '../features/devices/device-pending-view.js';
+import { createBanService } from '../features/admin/ban-service.js';
+import { createAdminView } from '../features/admin/admin-view.js';
+import { createBannedView } from '../features/admin/banned-view.js';
 import { createAuthService } from '../features/auth/auth-service.js';
 import { createAuthView } from '../features/auth/auth-view.js';
 
@@ -64,18 +67,19 @@ const usersService = createUsersService(store);
 const presenceService = createPresenceService({ store, usersService });
 const postsService = createPostsService({ store, usersService });
 const newsService = createNewsService({ store, usersService });
-const authService = createAuthService({ store, usersService });
+const devicesService = createDevicesService({ store, usersService });
+const banService = createBanService({ store, usersService, devicesService });
+const authService = createAuthService({ store, usersService, banService });
 const mediaService = createMediaService({ store, usersService });
 const musicService = createMusicService({ store, usersService });
 const chatService = createChatService({ store, usersService });
-const devicesService = createDevicesService({ store, usersService });
 
 function ensureCurrentDevice() {
   const user = usersService.getCurrentUser();
   if (user) devicesService.ensureDevice(user.id);
 }
 
-const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices', 'deletedIds'];
+const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices', 'deletedIds', 'bans'];
 const POLL_INTERVAL = 1000;
 let syncPromise = null;
 
@@ -198,7 +202,7 @@ const router = createRouter({
     '/chat/:userId': ({ userId }) => createChatThreadView({
       store, usersService, chatService, userId,
     }),
-    '/admin': () => createInfoView({ page: 'admin' }),
+    '/admin': () => createAdminView({ store, usersService, devicesService, banService }),
     '/wall/:userId': ({ userId }) => createWallView({ store, usersService, postsService, userId }),
     '/register': () => createAuthView({
       mode: 'register', authService, onAuthenticated: handleAuthenticated,
@@ -212,6 +216,12 @@ const router = createRouter({
     const currentUser = usersService.getCurrentUser();
     const isAuthenticated = Boolean(currentUser);
     const isAuthRoute = path === '/register' || path === '/login';
+
+    if (isAuthenticated && banService.isCurrentBlocked()) {
+      const banned = createBannedView({ onLogout: handleLogout });
+      viewRoot.innerHTML = banned.html;
+      return banned.mount(viewRoot);
+    }
 
     if (!isAuthenticated && !isAuthRoute) {
       router.navigate('/register');

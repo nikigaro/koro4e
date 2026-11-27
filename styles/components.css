@@ -910,6 +910,90 @@
   margin-top: var(--space-5);
 }
 
+/* Админ панель */
+.admin-page {
+  max-width: 720px;
+}
+
+.admin__title {
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.admin__hint {
+  margin-bottom: var(--space-3);
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.admin__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.admin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.admin-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.admin-row__info span {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.admin__you {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.button--danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.banned-page {
+  display: grid;
+  place-items: center;
+  min-height: 65vh;
+}
+
+.banned-page__card {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-5);
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+}
+
+.banned-page__title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.banned-page__text {
+  margin: var(--space-3) 0 var(--space-5);
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
 .editor-block {
   padding: var(--space-4);
   background: var(--color-surface);
