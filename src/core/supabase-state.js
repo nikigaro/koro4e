@@ -33,7 +33,7 @@ function mergeById(local = [], remote = [], deleted = new Set()) {
   return [...merged.values()].filter((item) => !deleted.has(item.id));
 }
 
-function mergeUsers(local = [], remote = []) {
+function mergeUsers(local = [], remote = [], deleted = new Set()) {
   const merged = new Map();
   remote.forEach((user) => merged.set(user.id, user));
   local.forEach((user) => {
@@ -52,7 +52,7 @@ function mergeUsers(local = [], remote = []) {
       isOnline: Date.now() - lastSeen < 45_000,
     });
   });
-  return [...merged.values()];
+  return [...merged.values()].filter((user) => !deleted.has(user.id));
 }
 
 /** Объединение данных с учётом удалений, чтобы удалённое не возвращалось из Supabase. */
@@ -67,7 +67,7 @@ export function mergeStates(local, remote) {
   return {
     ...local,
     ...remote,
-    users: mergeUsers(local.users, remote.users),
+    users: mergeUsers(local.users, remote.users, deleted),
     posts: mergeById(local.posts, remote.posts, deleted),
     news: mergeById(local.news, remote.news, deleted),
     media: mergeById(local.media, remote.media, deleted),
