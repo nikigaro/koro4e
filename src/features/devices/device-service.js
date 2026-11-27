@@ -50,6 +50,7 @@ export function createDevicesService({ store, usersService }) {
       primary: !hasPrimary,
       approved: !hasPrimary,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
     store.setState((state) => ({
@@ -72,7 +73,7 @@ export function createDevicesService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       devices: (state.devices ?? []).map((device) => (
-        device.id === id ? { ...device, approved: true } : device
+        device.id === id ? { ...device, approved: true, updatedAt: Date.now() } : device
       )),
     }));
   }
@@ -81,7 +82,7 @@ export function createDevicesService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       devices: (state.devices ?? []).map((device) => (
-        device.id === id && !device.primary ? { ...device, approved: false } : device
+        device.id === id && !device.primary ? { ...device, approved: false, updatedAt: Date.now() } : device
       )),
     }));
   }

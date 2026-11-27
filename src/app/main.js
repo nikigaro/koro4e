@@ -45,6 +45,7 @@ store.subscribe(() => {
   clearTimeout(remoteSaveTimer);
   remoteSaveTimer = setTimeout(async () => {
     try {
+      await syncFromRemote();
       await saveRemoteState(store.getState());
     } catch (error) {
       console.warn('Не удалось сохранить в Supabase:', error);
@@ -76,31 +77,35 @@ function ensureCurrentDevice() {
 
 const SYNC_KEYS = ['users', 'posts', 'news', 'media', 'audio', 'messages', 'chatAgreements', 'devices', 'deletedIds'];
 const POLL_INTERVAL = 1000;
-let syncing = false;
+let syncPromise = null;
 
-async function syncFromRemote() {
-  if (syncing) return;
-  syncing = true;
-  try {
-    const remote = await loadRemoteState();
-    if (!remote) return;
+function syncFromRemote() {
+  if (syncPromise) return syncPromise;
 
-    const current = store.getState();
-    const next = mergeStates(current, remote);
-    const changed = SYNC_KEYS.some((key) => (
-      JSON.stringify(current[key]) !== JSON.stringify(next[key])
-    ));
-    if (!changed) return;
+  syncPromise = (async () => {
+    try {
+      const remote = await loadRemoteState();
+      if (!remote) return;
 
-    store.setState(next);
-    if (await chatService.decryptMissing()) {
-      store.setState({ ...store.getState() });
+      const current = store.getState();
+      const next = mergeStates(current, remote);
+      const changed = SYNC_KEYS.some((key) => (
+        JSON.stringify(current[key]) !== JSON.stringify(next[key])
+      ));
+      if (!changed) return;
+
+      store.setState(next);
+      if (await chatService.decryptMissing()) {
+        store.setState({ ...store.getState() });
+      }
+    } catch (error) {
+      console.warn('Не удалось обновить данные из Supabase:', error);
+    } finally {
+      syncPromise = null;
     }
-  } catch (error) {
-    console.warn('Не удалось обновить данные из Supabase:', error);
-  } finally {
-    syncing = false;
-  }
+  })();
+
+  return syncPromise;
 }
 
 const syncChannel = typeof BroadcastChannel === 'function'

@@ -31,6 +31,7 @@ export function createMusicService({ store, usersService }) {
       likes: 0,
       likedByMe: false,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
     store.setState((state) => ({ ...state, audio: [track, ...(state.audio ?? [])] }));
@@ -45,6 +46,7 @@ export function createMusicService({ store, usersService }) {
           ...track,
           likedByMe: !track.likedByMe,
           likes: (track.likes ?? 0) + (track.likedByMe ? -1 : 1),
+          updatedAt: Date.now(),
         }
         : track),
     }));

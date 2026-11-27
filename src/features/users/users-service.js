@@ -33,7 +33,9 @@ export function createUsersService(store) {
 
     store.setState((state) => ({
       ...state,
-      users: state.users.map((user) => user.id === sessionUserId ? { ...user, ...patch } : user),
+      users: state.users.map((user) => user.id === sessionUserId
+        ? { ...user, ...patch, updatedAt: Date.now() }
+        : user),
     }));
 
     return getCurrentUser();

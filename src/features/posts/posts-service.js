@@ -36,6 +36,7 @@ export function createPostsService({ store, usersService }) {
       wallOwnerId: ownerId,
       text: cleanText,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
       likes: 0,
       likedByMe: false,
       attachments: safeAttachments,
@@ -49,7 +50,12 @@ export function createPostsService({ store, usersService }) {
     store.setState((state) => ({
       ...state,
       posts: state.posts.map((post) => post.id === id
-        ? { ...post, likedByMe: !post.likedByMe, likes: post.likes + (post.likedByMe ? -1 : 1) }
+        ? {
+          ...post,
+          likedByMe: !post.likedByMe,
+          likes: post.likes + (post.likedByMe ? -1 : 1),
+          updatedAt: Date.now(),
+        }
         : post),
     }));
   }

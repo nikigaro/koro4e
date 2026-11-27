@@ -29,6 +29,7 @@ export function createMediaService({ store, usersService }) {
         likes: 0,
         likedByMe: false,
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
     } else {
       const result = await readMediaFile(file);
@@ -44,6 +45,7 @@ export function createMediaService({ store, usersService }) {
         likes: 0,
         likedByMe: false,
         createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
     }
 
@@ -59,6 +61,7 @@ export function createMediaService({ store, usersService }) {
           ...item,
           likedByMe: !item.likedByMe,
           likes: (item.likes ?? 0) + (item.likedByMe ? -1 : 1),
+          updatedAt: Date.now(),
         }
         : item),
     }));

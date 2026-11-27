@@ -24,7 +24,12 @@ function forRemote(state) {
 function mergeById(local = [], remote = [], deleted = new Set()) {
   const merged = new Map();
   remote.forEach((item) => merged.set(item.id, item));
-  local.forEach((item) => merged.set(item.id, { ...merged.get(item.id), ...item }));
+  local.forEach((item) => {
+    const saved = merged.get(item.id);
+    if (!saved || (item.updatedAt ?? 0) > (saved.updatedAt ?? 0)) {
+      merged.set(item.id, item);
+    }
+  });
   return [...merged.values()].filter((item) => !deleted.has(item.id));
 }
 
@@ -33,11 +38,16 @@ function mergeUsers(local = [], remote = []) {
   remote.forEach((user) => merged.set(user.id, user));
   local.forEach((user) => {
     const saved = merged.get(user.id);
-    const lastSeen = Math.max(user.lastSeen ?? 0, saved?.lastSeen ?? 0);
+    if (!saved) {
+      merged.set(user.id, user);
+      return;
+    }
+
+    const newer = (user.updatedAt ?? 0) > (saved.updatedAt ?? 0) ? user : saved;
+    const lastSeen = Math.max(user.lastSeen ?? 0, saved.lastSeen ?? 0);
     merged.set(user.id, {
-      ...saved,
-      ...user,
-      auth: user.auth ?? saved?.auth,
+      ...newer,
+      auth: user.auth ?? saved.auth,
       lastSeen: lastSeen || undefined,
       isOnline: Date.now() - lastSeen < 45_000,
     });

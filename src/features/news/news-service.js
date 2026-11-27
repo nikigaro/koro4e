@@ -39,6 +39,7 @@ export function createNewsService({ store, usersService }) {
       text: cleanText,
       link: cleanLink(link),
       image: typeof image === 'string' && image.startsWith('data:image/') ? image : '',
+      updatedAt: Date.now(),
     };
 
     store.setState((state) => {

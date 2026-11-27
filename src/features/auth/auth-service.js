@@ -46,6 +46,7 @@ export function createAuthService({ store, usersService }) {
       color: '#23dcb7',
       avatar: pickInitialAvatar(),
       auth: { salt, hash },
+      updatedAt: Date.now(),
     };
 
     store.setState((state) => ({
