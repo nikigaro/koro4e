@@ -34,7 +34,10 @@ export function loadState() {
 
     // Мягкая миграция старых версий состояния и удаление ботов.
     const savedUsers = Array.isArray(saved.users) ? saved.users : seedUsers;
-    const users = savedUsers.filter((user) => !REMOVED_USER_IDS.has(user.id));
+    const deletedIds = new Set(Array.isArray(saved.deletedIds) ? saved.deletedIds : []);
+    const users = savedUsers.filter((user) => (
+      !REMOVED_USER_IDS.has(user.id) && !deletedIds.has(user.id)
+    ));
     const userIds = new Set(users.map((user) => user.id));
 
     const savedPosts = Array.isArray(saved.posts) ? saved.posts : seedPosts;
